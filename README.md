@@ -100,7 +100,7 @@
 * **Profilers** - Valgrind, perf, Intel VTune
 * **Network analysis** - Wireshark for protocol debugging
 * **Build systems** - CMake, Make
-* **Static analysis** - Clang analyzer, PVS-Studio
+* **Static analysis** - Clang analyzer
 
 ### Architecture Patterns
 * **Observer pattern** - Event notifications
