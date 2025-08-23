@@ -1,3 +1,0 @@
-/home/anmol/Desktop/my-torrent-client/build/CMakeFiles/tinytorrent.dir
-/home/anmol/Desktop/my-torrent-client/build/CMakeFiles/edit_cache.dir
-/home/anmol/Desktop/my-torrent-client/build/CMakeFiles/rebuild_cache.dir

@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/tinytorrent.dir/main.cpp.o -o tinytorrent  /usr/lib/x86_64-linux-gnu/libcurl.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 

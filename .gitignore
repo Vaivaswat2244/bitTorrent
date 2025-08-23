@@ -1,0 +1,16 @@
+# CMake and build artifacts
+/build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.a
+*.so
+
+# The compiled executable
+tinytorrent
+
+# Common editor and OS files
+/.vscode/
+.DS_Store
+*~
