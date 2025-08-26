@@ -3,9 +3,9 @@
 ## Phase 1: Foundation
 **Study:** Bencode format, SHA-1 hashing, HTTP protocol, C++ file I/O, CMake
 
-* [ ] Set up C++ project with CMake and testing framework
-* [ ] Implement bencode parser/encoder
-* [ ] Create torrent file parser (extract metadata, info hash)
+* [x] Set up C++ project with CMake and testing framework
+* [x] Implement bencode parser/encoder
+* [x] Create torrent file parser (extract metadata, info hash)
 * [ ] Implement HTTP tracker communication
 * [ ] Add basic logging system
 
