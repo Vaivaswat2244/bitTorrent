@@ -1,5 +1,6 @@
-#include "TorrentFile.h"
+#include "bittorrent/torrent/TorrentFile.hpp"
 #include "bencode_parser.hpp"
+#include "bittorrent/logging.hpp"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -15,6 +16,7 @@ TorrentFile::TorrentFile(const std::string& torrent_file_path)
     std::ifstream file(torrent_file_path, std::ios::binary);
     if (!file.is_open()) {
         error_message_ = "Cannot open torrent file: " + torrent_file_path;
+        LOG_ERROR(error_message_);
         return;
     }
     
@@ -23,6 +25,7 @@ TorrentFile::TorrentFile(const std::string& torrent_file_path)
                               std::istreambuf_iterator<char>());
     file.close();
     
+    LOG_INFO("Parsing torrent data from file: " << torrent_file_path << ", size=" << data.size());
     parse_torrent_data(data);
 }
 
@@ -45,20 +48,22 @@ void TorrentFile::parse_torrent_data(const std::vector<uint8_t>& data) {
         auto announce_it = root_dict.find("announce");
         if (announce_it != root_dict.end()) {
             announce_ = std::get<std::string>(announce_it->second.data);
+            LOG_DEBUG("announce=" << announce_);
         }
         
        
         auto announce_list_it = root_dict.find("announce-list");
         if (announce_list_it != root_dict.end()) {
-            BencodeList& announce_list = std::get<BencodeList>(announce_list_it->second.data);
+            const BencodeList& announce_list = std::get<BencodeList>(announce_list_it->second.data);
             for (const auto& tier_value : announce_list) {
                 TrackerTier tracker_tier;
-                BencodeList& tier_list = std::get<BencodeList>(tier_value.data);
+                const BencodeList& tier_list = std::get<BencodeList>(tier_value.data);
                 for (const auto& url_value : tier_list) {
                     tracker_tier.urls.push_back(std::get<std::string>(url_value.data));
                 }
                 announce_list_.push_back(tracker_tier);
             }
+            LOG_DEBUG("Found announce-list with " << announce_list_.size() << " tiers");
         }
         
         // Parse optional fields
@@ -82,7 +87,9 @@ void TorrentFile::parse_torrent_data(const std::vector<uint8_t>& data) {
         if (info_it != root_dict.end()) {
             parse_info_dict(info_it->second);
             calculate_info_hash(data);
+            LOG_INFO("Parsed info dict; name=" << name_ << " total_length=" << total_length_);
         } else {
+            LOG_ERROR("No 'info' dictionary found in torrent");
             throw std::runtime_error("No 'info' dictionary found in torrent");
         }
         
@@ -95,7 +102,7 @@ void TorrentFile::parse_torrent_data(const std::vector<uint8_t>& data) {
 }
 
 void TorrentFile::parse_info_dict(const BencodeValue& info_dict) {
-    BencodeDict& info_map = std::get<BencodeDict>(info_dict.data);
+    const BencodeDict& info_map = std::get<BencodeDict>(info_dict.data);
     
     // Parse name
     auto name_it = info_map.find("name");
@@ -121,14 +128,14 @@ void TorrentFile::parse_info_dict(const BencodeValue& info_dict) {
 }
 
 void TorrentFile::parse_files(const BencodeValue& info_dict) {
-    BencodeDict& info_map = std::get<BencodeDict>(info_dict.data);
+    const BencodeDict& info_map = std::get<BencodeDict>(info_dict.data);
     
     auto files_it = info_map.find("files");
     if (files_it != info_map.end()) {
         // Multi-file torrent
-        BencodeList& files_list = std::get<BencodeList>(files_it->second.data);
+        const BencodeList& files_list = std::get<BencodeList>(files_it->second.data);
         for (const auto& file_entry : files_list) {
-            BencodeDict& file_map = std::get<BencodeDict>(file_entry.data);
+                const BencodeDict& file_map = std::get<BencodeDict>(file_entry.data);
             
             FileInfo file_info;
             
@@ -139,7 +146,7 @@ void TorrentFile::parse_files(const BencodeValue& info_dict) {
             
             auto path_it = file_map.find("path");
             if (path_it != file_map.end()) {
-                BencodeList& path_list = std::get<BencodeList>(path_it->second.data);
+                const BencodeList& path_list = std::get<BencodeList>(path_it->second.data);
                 for (const auto& path_component : path_list) {
                     file_info.path_components.push_back(std::get<std::string>(path_component.data));
                 }

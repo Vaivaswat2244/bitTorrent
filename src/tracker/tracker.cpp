@@ -1,5 +1,6 @@
 #include "tracker.hpp"
 #include "bencode_parser.hpp" // We need this to parse the response
+#include "bittorrent/logging.hpp"
 #include <curl/curl.h>
 #include <stdexcept>
 #include <sstream>
@@ -32,8 +33,11 @@ std::string url_encode(const std::string& value) {
 std::vector<Peer> get_peers_from_tracker(const std::string& tracker_url, const std::string& info_hash) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        throw std::runtime_error("Failed to initialize curl");
+    LOG_ERROR("Failed to initialize curl");
+    throw std::runtime_error("Failed to initialize curl");
     }
+
+    LOG_DEBUG("Building tracker request for " << tracker_url);
 
     // 1. Generate a peer_id
     std::string peer_id = "-TTC0001-"; // TinyTorrentClient version 0.0.1
@@ -64,8 +68,10 @@ std::vector<Peer> get_peers_from_tracker(const std::string& tracker_url, const s
     // 3. Perform the request
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
+        std::string err = curl_easy_strerror(res);
+        LOG_ERROR("curl_easy_perform() failed: " << err);
         curl_easy_cleanup(curl);
-        throw std::runtime_error("curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)));
+        throw std::runtime_error("curl_easy_perform() failed: " + err);
     }
     curl_easy_cleanup(curl);
 
@@ -75,7 +81,9 @@ std::vector<Peer> get_peers_from_tracker(const std::string& tracker_url, const s
     BencodeDict& response_dict = std::get<BencodeDict>(parsed_response.data);
 
     if (response_dict.count("failure reason")) {
-        throw std::runtime_error("Tracker error: " + std::get<std::string>(response_dict.at("failure reason").data));
+        std::string reason = std::get<std::string>(response_dict.at("failure reason").data);
+        LOG_WARN("Tracker returned failure reason: " << reason);
+        throw std::runtime_error("Tracker error: " + reason);
     }
 
     std::string peers_str = std::get<std::string>(response_dict.at("peers").data);
@@ -97,7 +105,8 @@ std::vector<Peer> get_peers_from_tracker(const std::string& tracker_url, const s
         // Next 2 bytes are the port in network byte order (big-endian)
         p.port = ntohs(*reinterpret_cast<const uint16_t*>(peer_chunk.data() + 4));
 
-        peers.push_back(p);
+    LOG_DEBUG("Found peer " << p.ip << ":" << p.port);
+    peers.push_back(p);
     }
 
     return peers;
