@@ -6,7 +6,7 @@
 * [x] Set up C++ project with CMake and testing framework
 * [x] Implement bencode parser/encoder
 * [x] Create torrent file parser (extract metadata, info hash)
-* [ ] Implement HTTP tracker communication
+* [x] Implement HTTP tracker communication
 * [ ] Add basic logging system
 
 ## Phase 2: Peer Protocol
