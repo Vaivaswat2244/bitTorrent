@@ -7,8 +7,8 @@
 * [x] Implement bencode parser/encoder
 * [x] Create torrent file parser (extract metadata, info hash)
 * [x] Implement HTTP tracker communication
-* [ ] Add basic logging system
-
+* [x] Add basic logging system
+Phase 1 completed!
 ## Phase 2: Peer Protocol
 **Study:** TCP sockets, BitTorrent peer wire protocol, binary data handling, threading basics
 
